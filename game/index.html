@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌趣中文对话游戏 | Cute Chinese Conversation Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', cursive;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%);
+            min-height: 100vh;
+            color: #555;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .bg-element {
+            position: fixed;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .cloud {
+            background: white;
+            border-radius: 50px;
+            width: 120px;
+            height: 40px;
+            animation: float 20s infinite linear;
+        }
+        
+        .cloud:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .cloud:nth-child(2) { top: 20%; right: 10%; animation-delay: -5s; }
+        .cloud:nth-child(3) { top: 40%; left: 15%; animation-delay: -10s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(20px) translateY(-10px); }
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(255, 182, 193, 0.3);
+            border: 3px dashed #ffccd5;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header:before {
+            content: "🌸 🍜 🚖 🛒 🏨";
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            font-size: 1.5em;
+            opacity: 0.3;
+        }
+        
+        .title-main {
+            font-size: 2.8em;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #ff8a80, #ffcc80, #a5d6a7, #80deea);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.8);
+        }
+        
+        .title-english {
+            font-size: 1.2em;
+            color: #ff6b9d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .scene-selection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .scene-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .scene-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .scene-btn.active {
+            background: #80deea;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .scene-btn.completed {
+            border: 2px solid #a5d6a7;
+            background: rgba(165, 214, 167, 0.1);
+        }
+        
+        .scene-btn.completed:after {
+            content: "✓";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #a5d6a7;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .scene-emoji {
+            font-size: 1.3em;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .dialogue-container {
+            flex: 2;
+            min-width: 350px;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.2);
+        }
+        
+        .scene-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #ffecb3, #ffcc80);
+            text-align: center;
+            position: relative;
+        }
+        
+        .scene-title {
+            font-size: 1.8em;
+            color: #5d4037;
+            margin-bottom: 5px;
+        }
+        
+        .scene-subtitle {
+            color: #795548;
+            font-size: 1em;
+            opacity: 0.8;
+        }
+        
+        .conversation-area {
+            padding: 30px;
+            min-height: 300px;
+            background: #fffde7;
+        }
+        
+        .message {
+            margin-bottom: 25px;
+            animation: fadeIn 0.5s;
+        }
+        
+        .message-avatar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ffcc80;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+        
+        .message-sender {
+            font-weight: bold;
+            color: #5d4037;
+            font-size: 1.1em;
+        }
+        
+        .message-sender-english {
+            font-size: 0.9em;
+            color: #795548;
+            margin-left: 10px;
+            opacity: 0.7;
+        }
+        
+        .message-bubble {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid #ffecb3;
+            margin-left: 65px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .message-bubble:before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            border: 10px solid transparent;
+            border-right-color: white;
+        }
+        
+        .chinese-text {
+            font-size: 1.4em;
+            color: #5d4037;
+            margin-bottom: 8px;
+        }
+        
+        .pinyin-text {
+            color: #ff8a65;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+        
+        .english-text {
+            color: #78909c;
+            font-style: italic;
+            border-left: 3px solid #a5d6a7;
+            padding-left: 12px;
+            font-size: 0.95em;
+        }
+        
+        .question-area {
+            background: #f3e5f5;
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+        
+        .question-text {
+            font-size: 1.3em;
+            color: #5d4037;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .question-english {
+            color: #7b1fa2;
+            font-size: 1em;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .option-btn {
+            background: white;
+            border: 2px solid #e1bee7;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .option-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(225, 190, 231, 0.3);
+            border-color: #ba68c8;
+        }
+        
+        .option-btn.correct {
+            border-color: #a5d6a7;
+            background: rgba(165, 214, 167, 0.1);
+        }
+        
+        .option-btn.incorrect {
+            border-color: #ff8a80;
+            background: rgba(255, 138, 128, 0.1);
+        }
+        
+        .option-number {
+            width: 35px;
+            height: 35px;
+            background: #f3e5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #7b1fa2;
+            flex-shrink: 0;
+        }
+        
+        .option-btn.correct .option-number {
+            background: #a5d6a7;
+            color: white;
+        }
+        
+        .option-content {
+            flex: 1;
+        }
+        
+        .option-chinese {
+            font-size: 1.2em;
+            color: #5d4037;
+            margin-bottom: 5px;
+        }
+        
+        .option-english {
+            color: #78909c;
+            font-size: 0.95em;
+            font-style: italic;
+        }
+        
+        .side-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.2);
+        }
+        
+        .stats-title {
+            font-size: 1.4em;
+            color: #5d4037;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid #ffecb3;
+            padding-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b9d;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #795548;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .stat-label-english {
+            color: #9e9e9e;
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+        
+        .progress-container {
+            margin: 30px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #5d4037;
+            font-size: 0.95em;
+        }
+        
+        .progress-bar {
+            height: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #80deea, #a5d6a7);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white;
+        }
+        
+        .next-btn {
+            background: linear-gradient(45deg, #80deea, #4db6ac);
+        }
+        
+        .hint-btn {
+            background: linear-gradient(45deg, #ffcc80, #ffb74d);
+        }
+        
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .feedback-area {
+            background: #e8f5e9;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+            border: 2px solid #a5d6a7;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .feedback-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #2e7d32;
+            font-size: 1.2em;
+        }
+        
+        .explanation-text {
+            color: #5d4037;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .explanation-english {
+            color: #78909c;
+            font-style: italic;
+            border-left: 3px solid #ffcc80;
+            padding-left: 12px;
+            margin-top: 10px;
+        }
+        
+        .completion-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .completion-content {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            border: 5px solid #ffcc80;
+            animation: popIn 0.8s;
+        }
+        
+        .completion-emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .completion-title {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #5d4037;
+        }
+        
+        .completion-stats {
+            margin: 25px 0;
+            line-height: 1.8;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+        
+        .total-progress {
+            margin-top: 30px;
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .total-progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #5d4037;
+            font-weight: bold;
+        }
+        
+        .scene-status {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-element cloud"></div>
+    <div class="bg-element cloud"></div>
+    <div class="bg-element cloud"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="title-main">🍜 萌趣中文对话游戏</h1>
+            <div class="title-english">Cute Chinese Conversation Game</div>
+            
+            <div class="scene-selection">
+                <button class="scene-btn active" onclick="changeScene(0)">
+                    <span class="scene-emoji">🍜</span>
+                    <span>餐厅点餐<br><small>Restaurant Ordering</small></span>
+                </button>
+                <button class="scene-btn" onclick="changeScene(1)">
+                    <span class="scene-emoji">✈️</span>
+                    <span>机场到达<br><small>Airport Arrival</small></span>
+                </button>
+                <button class="scene-btn" onclick="changeScene(2)">
+                    <span class="scene-emoji">🏨</span>
+                    <span>酒店入住<br><small>Hotel Check-in</small></span>
+                </button>
+                <button class="scene-btn" onclick="changeScene(3)">
+                    <span class="scene-emoji">🛒</span>
+                    <span>购物对话<br><small>Shopping Conversation</small></span>
+                </button>
+            </div>
+            
+            <div class="scene-status">
+                <span id="sceneCount">4个场景可用 | 4 scenes available</span>
+                <span id="activeScene">当前: 餐厅点餐 | Current: Restaurant</span>
+            </div>
+        </header>
+        
+        <div class="game-area">
+            <div class="dialogue-container">
+                <div class="scene-header">
+                    <div class="scene-title" id="sceneTitle">餐厅点餐</div>
+                    <div class="scene-subtitle" id="sceneSubtitle">Restaurant Ordering</div>
+                </div>
+                
+                <div class="conversation-area" id="conversationArea">
+                    <!-- 对话内容在这里动态生成 -->
+                </div>
+                
+                <div class="question-area">
+                    <div class="question-text" id="questionText">服务员问："欢迎光临！这是菜单。"，你应该怎么回答？</div>
+                    <div class="question-english" id="questionEnglish">The server says: "Welcome! Here is the menu." How should you respond?</div>
+                    
+                    <div class="options-container" id="optionsContainer">
+                        <!-- 选项在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="side-panel">
+                <div class="stats-title">学习进度<br><small>Learning Progress</small></div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">当前场景<br><small class="stat-label-english">Current Scene</small></div>
+                        <div class="stat-value" id="currentSceneStat">餐厅</div>
+                        <div class="stat-label-english" id="currentSceneEnglish">Restaurant</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">正确率<br><small class="stat-label-english">Accuracy Rate</small></div>
+                        <div class="stat-value" id="accuracyRate">92%</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">连续正确<br><small class="stat-label-english">Streak</small></div>
+                        <div class="stat-value" id="streakStat">8</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">已学习<br><small class="stat-label-english">Learned</small></div>
+                        <div class="stat-value" id="learnedStat">24</div>
+                        <div class="stat-label-english">个表达<br>expressions</div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>场景进度<br><small>Scene Progress</small></span>
+                        <span id="progressText">3/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 60%;"></div>
+                    </div>
+                </div>
+                
+                <div class="total-progress">
+                    <div class="total-progress-label">
+                        <span>总体进度<br><small>Total Progress</small></span>
+                        <span id="totalProgressText">1/4</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="totalProgressFill" style="width: 25%; background: linear-gradient(90deg, #ffcc80, #ff8a80);"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="action-btn hint-btn" id="hintBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>提示<br><small>Hint</small></span>
+                    </button>
+                    <button class="action-btn next-btn" id="nextBtn" disabled>
+                        <i class="fas fa-arrow-right"></i>
+                        <span>继续<br><small>Continue</small></span>
+                    </button>
+                </div>
+                
+                <div class="feedback-area" id="feedbackArea">
+                    <div class="feedback-title" id="feedbackTitle">
+                        <i class="fas fa-check-circle"></i>
+                        <span>回答正确！<br><small>Correct Answer!</small></span>
+                    </div>
+                    <div class="explanation-text" id="explanationText">
+                        当服务员给你菜单时，说"谢谢"是最礼貌的回应。
+                    </div>
+                    <div class="explanation-english" id="explanationEnglish">
+                        When the server hands you the menu, saying "Thank you" is the most polite response.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="completion-screen" id="completionScreen">
+        <div class="completion-content">
+            <div class="completion-emoji">🎉</div>
+            <div class="completion-title">场景完成！<br><small>Scene Completed!</small></div>
+            <div class="completion-stats">
+                <div>你成功完成了 <strong id="completedSceneName">餐厅点餐</strong> 场景！<br>
+                <small>You successfully completed the <strong id="completedSceneNameEnglish">Restaurant Ordering</strong> scene!</small></div>
+                <br>
+                <div>正确率: <strong id="finalAccuracy">92%</strong><br>
+                <small>Accuracy: <strong>92%</strong></small></div>
+                <div>最高连续正确: <strong id="finalStreak">8</strong><br>
+                <small>Best Streak: <strong>8</strong></small></div>
+            </div>
+            <button class="action-btn next-btn" onclick="continuePlaying()" style="padding: 15px 30px;">
+                <i class="fas fa-play"></i>
+                <span>继续学习<br><small>Continue Learning</small></span>
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // 修复：确保所有4个场景都有完整的对话内容
+        const scenes = [
+            {
+                id: 0,
+                title: "餐厅点餐",
+                titleEnglish: "Restaurant Ordering",
+                description: "学习在餐厅点餐的实用对话",
+                descriptionEnglish: "Learn practical conversations for ordering food in restaurants",
+                completed: false,
+                characters: [
+                    { 
+                        id: 1, 
+                        name: "服务员", 
+                        nameEnglish: "Server",
+                        emoji: "👩‍🍳", 
+                        color: "#ffcc80" 
+                    },
+                    { 
+                        id: 2, 
+                        name: "你", 
+                        nameEnglish: "You",
+                        emoji: "👩", 
+                        color: "#80deea" 
+                    }
+                ],
+                dialogues: [
+                    {
+                        speaker: 1,
+                        chinese: "欢迎光临！这是菜单。",
+                        pinyin: "Huānyíng guānglín! Zhè shì càidān.",
+                        english: "Welcome! Here is the menu.",
+                        questionChinese: "你应该怎么回答？",
+                        questionEnglish: "How should you respond?",
+                        options: [
+                            { 
+                                chinese: "谢谢！", 
+                                pinyin: "Xièxiè!", 
+                                english: "Thank you!", 
+                                correct: true,
+                                explanationChinese: "当别人给你东西时，说'谢谢'是最礼貌的回应。",
+                                explanationEnglish: "Saying 'Thank you' is the most polite response when someone gives you something."
+                            },
+                            { 
+                                chinese: "我不饿。", 
+                                pinyin: "Wǒ bù è.", 
+                                english: "I'm not hungry.", 
+                                correct: false,
+                                explanationChinese: "这个回答不相关，服务员给你菜单，不是问你是否饿。",
+                                explanationEnglish: "This response is irrelevant. The server is giving you the menu, not asking if you're hungry."
+                            },
+                            { 
+                                chinese: "太贵了！", 
+                                pinyin: "Tài guì le!", 
+                                english: "Too expensive!", 
+                                correct: false,
+                                explanationChinese: "还没看到价格就说贵，不礼貌也不合适。",
+                                explanationEnglish: "Saying it's expensive before seeing the prices is impolite and inappropriate."
+                            },
+                            { 
+                                chinese: "我要水。", 
+                                pinyin: "Wǒ yào shuǐ.", 
+                                english: "I want water.", 
+                                correct: false,
+                                explanationChinese: "这个回答跳过了礼貌回应，直接点单，不太合适。",
+                                explanationEnglish: "This response skips the polite acknowledgement and goes straight to ordering, which is not appropriate."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "想好吃什么了吗？",
+                        pinyin: "Xiǎng hǎo chī shénme le ma?",
+                        english: "Have you decided what to eat?",
+                        questionChinese: "你想点饺子，应该怎么说？",
+                        questionEnglish: "You want dumplings, what should you say?",
+                        options: [
+                            { 
+                                chinese: "我要饺子。", 
+                                pinyin: "Wǒ yào jiǎozi.", 
+                                english: "I want dumplings.", 
+                                correct: true,
+                                explanationChinese: "'我要...'是最常用的点餐表达，简单直接。",
+                                explanationEnglish: "'I want...' is the most common way to order food, simple and direct."
+                            },
+                            { 
+                                chinese: "饺子好吃。", 
+                                pinyin: "Jiǎozi hǎochī.", 
+                                english: "Dumplings are delicious.", 
+                                correct: false,
+                                explanationChinese: "这是在评价饺子，不是在点餐。",
+                                explanationEnglish: "This is commenting on the dumplings, not ordering them."
+                            },
+                            { 
+                                chinese: "我不吃饺子。", 
+                                pinyin: "Wǒ bù chī jiǎozi.", 
+                                english: "I don't eat dumplings.", 
+                                correct: false,
+                                explanationChinese: "这个回答与你想点饺子的意图相反。",
+                                explanationEnglish: "This response contradicts your intention to order dumplings."
+                            },
+                            { 
+                                chinese: "有面条吗？", 
+                                pinyin: "Yǒu miàntiáo ma?", 
+                                english: "Do you have noodles?", 
+                                correct: false,
+                                explanationChinese: "这是在询问其他选项，不是在点饺子。",
+                                explanationEnglish: "This is asking about other options, not ordering dumplings."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "喝点什么饮料？",
+                        pinyin: "Hē diǎn shénme yǐnliào?",
+                        english: "What would you like to drink?",
+                        questionChinese: "你想喝茶，应该怎么说？",
+                        questionEnglish: "You want tea, what should you say?",
+                        options: [
+                            { 
+                                chinese: "请给我茶。", 
+                                pinyin: "Qǐng gěi wǒ chá.", 
+                                english: "Please give me tea.", 
+                                correct: true,
+                                explanationChinese: "'请给我...'是礼貌的点饮料方式。",
+                                explanationEnglish: "'Please give me...' is a polite way to order drinks."
+                            },
+                            { 
+                                chinese: "我不喝茶。", 
+                                pinyin: "Wǒ bù hē chá.", 
+                                english: "I don't drink tea.", 
+                                correct: false,
+                                explanationChinese: "这个回答表示你不喝茶，与你想喝茶矛盾。",
+                                explanationEnglish: "This response says you don't drink tea, which contradicts wanting tea."
+                            },
+                            { 
+                                chinese: "茶太热。", 
+                                pinyin: "Chá tài rè.", 
+                                english: "The tea is too hot.", 
+                                correct: false,
+                                explanationChinese: "这是在评论茶的温度，不是在点茶。",
+                                explanationEnglish: "This is commenting on the tea's temperature, not ordering tea."
+                            },
+                            { 
+                                chinese: "有咖啡吗？", 
+                                pinyin: "Yǒu kāfēi ma?", 
+                                english: "Do you have coffee?", 
+                                correct: false,
+                                explanationChinese: "这是在询问咖啡，不是在点茶。",
+                                explanationEnglish: "This is asking about coffee, not ordering tea."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 1,
+                title: "机场到达",
+                titleEnglish: "Airport Arrival",
+                description: "学习在机场的实用对话",
+                descriptionEnglish: "Learn practical conversations at the airport",
+                completed: false,
+                characters: [
+                    { 
+                        id: 1, 
+                        name: "工作人员", 
+                        nameEnglish: "Officer",
+                        emoji: "👨‍✈️", 
+                        color: "#a5d6a7" 
+                    },
+                    { 
+                        id: 2, 
+                        name: "你", 
+                        nameEnglish: "You",
+                        emoji: "👩", 
+                        color: "#80deea" 
+                    }
+                ],
+                dialogues: [
+                    {
+                        speaker: 1,
+                        chinese: "请出示您的护照。",
+                        pinyin: "Qǐng chūshì nín de hùzhào.",
+                        english: "Please show your passport.",
+                        questionChinese: "你应该怎么回答？",
+                        questionEnglish: "How should you respond?",
+                        options: [
+                            { 
+                                chinese: "好的，给您。", 
+                                pinyin: "Hǎo de, gěi nín.", 
+                                english: "Okay, here you are.", 
+                                correct: true,
+                                explanationChinese: "递东西时说'好的，给您'非常礼貌。",
+                                explanationEnglish: "Saying 'Okay, here you are' when handing something over is very polite."
+                            },
+                            { 
+                                chinese: "我没有护照。", 
+                                pinyin: "Wǒ méiyǒu hùzhào.", 
+                                english: "I don't have a passport.", 
+                                correct: false,
+                                explanationChinese: "如果没有护照，你无法入境。",
+                                explanationEnglish: "If you don't have a passport, you cannot enter the country."
+                            },
+                            { 
+                                chinese: "等一下。", 
+                                pinyin: "Děng yīxià.", 
+                                english: "Wait a moment.", 
+                                correct: false,
+                                explanationChinese: "在机场检查时，应该立即配合。",
+                                explanationEnglish: "You should cooperate immediately during airport checks."
+                            },
+                            { 
+                                chinese: "为什么？", 
+                                pinyin: "Wèishénme?", 
+                                english: "Why?", 
+                                correct: false,
+                                explanationChinese: "在机场问'为什么'不太合适，应该配合检查。",
+                                explanationEnglish: "Asking 'Why?' at the airport is not appropriate; you should cooperate with the check."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "您来中国的目的是什么？",
+                        pinyin: "Nín lái Zhōngguó de mùdì shì shénme?",
+                        english: "What is the purpose of your visit to China?",
+                        questionChinese: "你是来旅游的，应该怎么回答？",
+                        questionEnglish: "You're here for tourism, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "我是来旅游的。", 
+                                pinyin: "Wǒ shì lái lǚyóu de.", 
+                                english: "I'm here for tourism.", 
+                                correct: true,
+                                explanationChinese: "'我是来...的'是说明目的的标准表达。",
+                                explanationEnglish: "'I'm here for...' is the standard way to state your purpose."
+                            },
+                            { 
+                                chinese: "我不知道。", 
+                                pinyin: "Wǒ bù zhīdào.", 
+                                english: "I don't know.", 
+                                correct: false,
+                                explanationChinese: "这个回答会引起工作人员的怀疑。",
+                                explanationEnglish: "This response would raise suspicion from the officer."
+                            },
+                            { 
+                                chinese: "我来工作。", 
+                                pinyin: "Wǒ lái gōngzuò.", 
+                                english: "I'm here to work.", 
+                                correct: false,
+                                explanationChinese: "如果你是来旅游的，不应该说工作。",
+                                explanationEnglish: "If you're here for tourism, you shouldn't say you're here to work."
+                            },
+                            { 
+                                chinese: "随便看看。", 
+                                pinyin: "Suíbiàn kànkan.", 
+                                english: "Just looking around.", 
+                                correct: false,
+                                explanationChinese: "在正式场合，这个回答不够严肃。",
+                                explanationEnglish: "In a formal setting, this response is not serious enough."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "您打算在中国待多久？",
+                        pinyin: "Nín dǎsuàn zài Zhōngguó dāi duōjiǔ?",
+                        english: "How long do you plan to stay in China?",
+                        questionChinese: "你计划待一周，应该怎么回答？",
+                        questionEnglish: "You plan to stay for one week, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "一个星期。", 
+                                pinyin: "Yī gè xīngqī.", 
+                                english: "One week.", 
+                                correct: true,
+                                explanationChinese: "'一个星期'是标准的时间表达。",
+                                explanationEnglish: "'One week' is the standard way to express duration."
+                            },
+                            { 
+                                chinese: "很久。", 
+                                pinyin: "Hěn jiǔ.", 
+                                english: "A long time.", 
+                                correct: false,
+                                explanationChinese: "这个回答太模糊，不具体。",
+                                explanationEnglish: "This response is too vague and not specific."
+                            },
+                            { 
+                                chinese: "明天就走。", 
+                                pinyin: "Míngtiān jiù zǒu.", 
+                                english: "I'll leave tomorrow.", 
+                                correct: false,
+                                explanationChinese: "如果只待一天，通常不需要说'待多久'。",
+                                explanationEnglish: "If staying only one day, usually you don't need to answer 'how long'."
+                            },
+                            { 
+                                chinese: "我不知道。", 
+                                pinyin: "Wǒ bù zhīdào.", 
+                                english: "I don't know.", 
+                                correct: false,
+                                explanationChinese: "不知道停留时间会引起怀疑。",
+                                explanationEnglish: "Not knowing how long you'll stay raises suspicion."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "酒店入住",
+                titleEnglish: "Hotel Check-in",
+                description: "学习在酒店办理入住的对话",
+                descriptionEnglish: "Learn conversations for hotel check-in",
+                completed: false,
+                characters: [
+                    { 
+                        id: 1, 
+                        name: "前台", 
+                        nameEnglish: "Receptionist",
+                        emoji: "💁", 
+                        color: "#80deea" 
+                    },
+                    { 
+                        id: 2, 
+                        name: "你", 
+                        nameEnglish: "You",
+                        emoji: "👩", 
+                        color: "#ffcc80" 
+                    }
+                ],
+                dialogues: [
+                    {
+                        speaker: 1,
+                        chinese: "下午好！您有预订吗？",
+                        pinyin: "Xiàwǔ hǎo! Nín yǒu yùdìng ma?",
+                        english: "Good afternoon! Do you have a reservation?",
+                        questionChinese: "你有预订，应该怎么回答？",
+                        questionEnglish: "You have a reservation, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "有的，我预订了房间。", 
+                                pinyin: "Yǒu de, wǒ yùdìng le fángjiān.", 
+                                english: "Yes, I booked a room.", 
+                                correct: true,
+                                explanationChinese: "'有的'是'是的'的更正式说法。",
+                                explanationEnglish: "'Yǒu de' is a more formal way to say 'yes'."
+                            },
+                            { 
+                                chinese: "我要吃饭。", 
+                                pinyin: "Wǒ yào chīfàn.", 
+                                english: "I want to eat.", 
+                                correct: false,
+                                explanationChinese: "这个回答与问题无关。",
+                                explanationEnglish: "This response is unrelated to the question."
+                            },
+                            { 
+                                chinese: "现在几点？", 
+                                pinyin: "Xiànzài jǐ diǎn?", 
+                                english: "What time is it now?", 
+                                correct: false,
+                                explanationChinese: "这是在问时间，不是回答预订问题。",
+                                explanationEnglish: "This is asking for the time, not answering the reservation question."
+                            },
+                            { 
+                                chinese: "我不喜欢这里。", 
+                                pinyin: "Wǒ bù xǐhuān zhèlǐ.", 
+                                english: "I don't like it here.", 
+                                correct: false,
+                                explanationChinese: "这个回答不礼貌也不相关。",
+                                explanationEnglish: "This response is impolite and irrelevant."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "请出示您的身份证。",
+                        pinyin: "Qǐng chūshì nín de shēnfènzhèng.",
+                        english: "Please show your ID card.",
+                        questionChinese: "你应该怎么回答？",
+                        questionEnglish: "How should you respond?",
+                        options: [
+                            { 
+                                chinese: "好的，给您。", 
+                                pinyin: "Hǎo de, gěi nín.", 
+                                english: "Okay, here you are.", 
+                                correct: true,
+                                explanationChinese: "递身份证时说'好的，给您'很礼貌。",
+                                explanationEnglish: "Saying 'Okay, here you are' when handing over your ID is polite."
+                            },
+                            { 
+                                chinese: "我没有身份证。", 
+                                pinyin: "Wǒ méiyǒu shēnfènzhèng.", 
+                                english: "I don't have an ID card.", 
+                                correct: false,
+                                explanationChinese: "在中国酒店住宿必须出示身份证。",
+                                explanationEnglish: "You must show your ID card to stay in Chinese hotels."
+                            },
+                            { 
+                                chinese: "为什么需要？", 
+                                pinyin: "Wèishénme xūyào?", 
+                                english: "Why is it needed?", 
+                                correct: false,
+                                explanationChinese: "在中国，酒店登记必须查验身份证。",
+                                explanationEnglish: "In China, hotels are required to check ID cards for registration."
+                            },
+                            { 
+                                chinese: "等一下。", 
+                                pinyin: "Děng yīxià.", 
+                                english: "Wait a moment.", 
+                                correct: false,
+                                explanationChinese: "应该立即配合，不是说'等一下'。",
+                                explanationEnglish: "You should cooperate immediately, not say 'wait a moment'."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "您住几个晚上？",
+                        pinyin: "Nín zhù jǐ gè wǎnshang?",
+                        english: "How many nights will you stay?",
+                        questionChinese: "你计划住3晚，应该怎么回答？",
+                        questionEnglish: "You plan to stay 3 nights, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "三个晚上。", 
+                                pinyin: "Sān gè wǎnshang.", 
+                                english: "Three nights.", 
+                                correct: true,
+                                explanationChinese: "数字+个晚上'是标准表达。",
+                                explanationEnglish: "'Number + nights' is the standard expression."
+                            },
+                            { 
+                                chinese: "很久。", 
+                                pinyin: "Hěn jiǔ.", 
+                                english: "A long time.", 
+                                correct: false,
+                                explanationChinese: "这个回答太模糊，不具体。",
+                                explanationEnglish: "This response is too vague and not specific."
+                            },
+                            { 
+                                chinese: "我不知道。", 
+                                pinyin: "Wǒ bù zhīdào.", 
+                                english: "I don't know.", 
+                                correct: false,
+                                explanationChinese: "不知道住多久会引起问题。",
+                                explanationEnglish: "Not knowing how long you'll stay causes problems."
+                            },
+                            { 
+                                chinese: "明天就走。", 
+                                pinyin: "Míngtiān jiù zǒu.", 
+                                english: "I'll leave tomorrow.", 
+                                correct: false,
+                                explanationChinese: "如果只住一晚，通常前台会直接安排。",
+                                explanationEnglish: "If staying only one night, usually the receptionist will arrange directly."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "购物对话",
+                titleEnglish: "Shopping Conversation",
+                description: "学习在商店购物的实用对话",
+                descriptionEnglish: "Learn practical conversations for shopping",
+                completed: false,
+                characters: [
+                    { 
+                        id: 1, 
+                        name: "店员", 
+                        nameEnglish: "Shop Assistant",
+                        emoji: "👨‍💼", 
+                        color: "#a5d6a7" 
+                    },
+                    { 
+                        id: 2, 
+                        name: "你", 
+                        nameEnglish: "You",
+                        emoji: "👩", 
+                        color: "#e1bee7" 
+                    }
+                ],
+                dialogues: [
+                    {
+                        speaker: 1,
+                        chinese: "需要帮忙吗？",
+                        pinyin: "Xūyào bāngmáng ma?",
+                        english: "Do you need help?",
+                        questionChinese: "你只是看看，应该怎么回答？",
+                        questionEnglish: "You're just looking, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "不用了，谢谢。", 
+                                pinyin: "Bùyòng le, xièxiè.", 
+                                english: "No, thank you.", 
+                                correct: true,
+                                explanationChinese: "'不用了，谢谢'是礼貌地表示不需要帮助。",
+                                explanationEnglish: "'No, thank you' is a polite way to say you don't need help."
+                            },
+                            { 
+                                chinese: "我要这个。", 
+                                pinyin: "Wǒ yào zhège.", 
+                                english: "I want this.", 
+                                correct: false,
+                                explanationChinese: "如果你只是看看，不应该这样说。",
+                                explanationEnglish: "If you're just looking, you shouldn't say this."
+                            },
+                            { 
+                                chinese: "太贵了！", 
+                                pinyin: "Tài guì le!", 
+                                english: "Too expensive!", 
+                                correct: false,
+                                explanationChinese: "这个回答不礼貌，而且你还没问价格。",
+                                explanationEnglish: "This response is impolite and you haven't even asked the price."
+                            },
+                            { 
+                                chinese: "有打折吗？", 
+                                pinyin: "Yǒu dǎzhé ma?", 
+                                english: "Is there a discount?", 
+                                correct: false,
+                                explanationChinese: "这个回答太直接，而且时机不对。",
+                                explanationEnglish: "This response is too direct and the timing is wrong."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "您想试试这件吗？",
+                        pinyin: "Nín xiǎng shìshi zhè jiàn ma?",
+                        english: "Would you like to try this on?",
+                        questionChinese: "你想试穿，应该怎么回答？",
+                        questionEnglish: "You want to try it on, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "好的，我想试试。", 
+                                pinyin: "Hǎo de, wǒ xiǎng shìshi.", 
+                                english: "Okay, I'd like to try it on.", 
+                                correct: true,
+                                explanationChinese: "'我想试试'是标准的试穿表达。",
+                                explanationEnglish: "'I'd like to try it on' is the standard expression for trying clothes."
+                            },
+                            { 
+                                chinese: "不要。", 
+                                pinyin: "Bùyào.", 
+                                english: "No.", 
+                                correct: false,
+                                explanationChinese: "这个回答太生硬，不礼貌。",
+                                explanationEnglish: "This response is too blunt and impolite."
+                            },
+                            { 
+                                chinese: "太大了。", 
+                                pinyin: "Tài dà le.", 
+                                english: "Too big.", 
+                                correct: false,
+                                explanationChinese: "你还没试穿，怎么知道大小？",
+                                explanationEnglish: "You haven't tried it on yet, how do you know the size?"
+                            },
+                            { 
+                                chinese: "多少钱？", 
+                                pinyin: "Duōshao qián?", 
+                                english: "How much?", 
+                                correct: false,
+                                explanationChinese: "应该先试穿，再问价格。",
+                                explanationEnglish: "You should try it on first, then ask the price."
+                            }
+                        ]
+                    },
+                    {
+                        speaker: 1,
+                        chinese: "这件很适合您！",
+                        pinyin: "Zhè jiàn hěn shìhé nín!",
+                        english: "This looks great on you!",
+                        questionChinese: "你觉得不错想买，应该怎么回答？",
+                        questionEnglish: "You like it and want to buy it, how should you respond?",
+                        options: [
+                            { 
+                                chinese: "好的，我要这件。", 
+                                pinyin: "Hǎo de, wǒ yào zhè jiàn.", 
+                                english: "Okay, I'll take this one.", 
+                                correct: true,
+                                explanationChinese: "'我要这件'是标准的购买表达。",
+                                explanationEnglish: "'I'll take this one' is the standard expression for buying."
+                            },
+                            { 
+                                chinese: "不好看。", 
+                                pinyin: "Bù hǎokàn.", 
+                                english: "It doesn't look good.", 
+                                correct: false,
+                                explanationChinese: "如果觉得不好看，为什么要买？",
+                                explanationEnglish: "If you don't think it looks good, why would you buy it?"
+                            },
+                            { 
+                                chinese: "有别的颜色吗？", 
+                                pinyin: "Yǒu biéde yánsè ma?", 
+                                english: "Do you have other colors?", 
+                                correct: false,
+                                explanationChinese: "这是在询问其他选项，不是在购买。",
+                                explanationEnglish: "This is asking about other options, not making a purchase."
+                            },
+                            { 
+                                chinese: "太贵了！", 
+                                pinyin: "Tài guì le!", 
+                                english: "Too expensive!", 
+                                correct: false,
+                                explanationChinese: "还没问价格就说贵，不礼貌。",
+                                explanationEnglish: "Saying it's expensive without asking the price is impolite."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // 游戏状态
+        let game = {
+            currentScene: 0,
+            currentDialogue: 0,
+            score: 0,
+            correctAnswers: 0,
+            totalAnswers: 0,
+            streak: 0,
+            maxStreak: 0,
+            hints: 3,
+            answered: false,
+            completedScenes: 0
+        };
+
+        // 初始化游戏
+        function initGame() {
+            console.log(`切换到场景 ${game.currentScene}: ${scenes[game.currentScene].title}`);
+            console.log(`该场景有 ${scenes[game.currentScene].dialogues.length} 个对话`);
+            
+            game.currentDialogue = 0;
+            game.answered = false;
+            updateDisplay();
+            loadCurrentDialogue();
+            updateProgress();
+            updateSceneButtons();
+            updateTotalProgress();
+        }
+
+        // 加载当前对话
+        function loadCurrentDialogue() {
+            const scene = scenes[game.currentScene];
+            const dialogue = scene.dialogues[game.currentDialogue];
+            
+            if (!dialogue) {
+                console.error(`场景 ${game.currentScene} 的第 ${game.currentDialogue} 个对话不存在`);
+                document.getElementById('conversationArea').innerHTML = `
+                    <div style="text-align:center; padding:50px; color:#666;">
+                        <div style="font-size:2em;">😅</div>
+                        <div style="font-size:1.2em; margin-top:20px;">这个场景还没有内容</div>
+                        <div style="margin-top:10px;">请选择其他场景</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 更新场景标题
+            document.getElementById('sceneTitle').textContent = scene.title;
+            document.getElementById('sceneSubtitle').textContent = scene.titleEnglish;
+            
+            // 显示对话
+            const conversationArea = document.getElementById('conversationArea');
+            const speaker = scene.characters.find(c => c.id === dialogue.speaker);
+            
+            conversationArea.innerHTML = `
+                <div class="message">
+                    <div class="message-avatar">
+                        <div class="avatar-circle">${speaker.emoji}</div>
+                        <div>
+                            <div class="message-sender">
+                                ${speaker.name}
+                                <span class="message-sender-english">${speaker.nameEnglish}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-bubble">
+                        <div class="chinese-text">${dialogue.chinese}</div>
+                        <div class="pinyin-text">${dialogue.pinyin}</div>
+                        <div class="english-text">${dialogue.english}</div>
+                    </div>
+                </div>
+            `;
+            
+            // 显示问题和选项
+            document.getElementById('questionText').textContent = dialogue.questionChinese;
+            document.getElementById('questionEnglish').textContent = dialogue.questionEnglish;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            dialogue.options.forEach((option, index) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.className = 'option-btn';
+                optionBtn.innerHTML = `
+                    <div class="option-number">${index + 1}</div>
+                    <div class="option-content">
+                        <div class="option-chinese">${option.chinese}</div>
+                        <div class="option-english">${option.pinyin} - ${option.english}</div>
+                    </div>
+                `;
+                
+                optionBtn.addEventListener('click', () => selectOption(option, optionBtn));
+                optionsContainer.appendChild(optionBtn);
+            });
+            
+            // 重置按钮状态
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('feedbackArea').style.display = 'none';
+            
+            // 更新场景状态显示
+            document.getElementById('activeScene').textContent = 
+                `当前: ${scene.title} | Current: ${scene.titleEnglish}`;
+        }
+
+        // 选择选项
+        function selectOption(option, button) {
+            if (game.answered) return;
+            
+            game.answered = true;
+            game.totalAnswers++;
+            
+            const scene = scenes[game.currentScene];
+            const dialogue = scene.dialogues[game.currentDialogue];
+            const options = document.querySelectorAll('.option-btn');
+            
+            // 标记所有选项的正确/错误状态
+            options.forEach(opt => {
+                const optText = opt.querySelector('.option-chinese').textContent;
+                const thisOption = dialogue.options.find(o => o.chinese === optText);
+                
+                if (thisOption.correct) {
+                    opt.classList.add('correct');
+                } else if (optText === option.chinese && !option.correct) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            // 更新游戏状态
+            if (option.correct) {
+                game.score += 10;
+                game.correctAnswers++;
+                game.streak++;
+                game.maxStreak = Math.max(game.maxStreak, game.streak);
+                
+                showFeedback(true, option);
+            } else {
+                game.streak = 0;
+                const correctOption = dialogue.options.find(o => o.correct);
+                showFeedback(false, option, correctOption);
+            }
+            
+            // 启用继续按钮
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('hintBtn').disabled = true;
+            
+            updateDisplay();
+        }
+
+        // 显示反馈
+        function showFeedback(isCorrect, selectedOption, correctOption = null) {
+            const feedback = document.getElementById('feedbackArea');
+            
+            if (isCorrect) {
+                document.getElementById('feedbackTitle').innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>回答正确！<br><small>Correct Answer!</small></span>
+                `;
+                feedback.style.borderColor = '#a5d6a7';
+                feedback.style.background = '#e8f5e9';
+                
+                document.getElementById('explanationText').textContent = selectedOption.explanationChinese;
+                document.getElementById('explanationEnglish').textContent = selectedOption.explanationEnglish;
+            } else {
+                document.getElementById('feedbackTitle').innerHTML = `
+                    <i class="fas fa-times-circle"></i>
+                    <span>再试一次！<br><small>Try Again!</small></span>
+                `;
+                feedback.style.borderColor = '#ff8a80';
+                feedback.style.background = '#ffebee';
+                
+                document.getElementById('explanationText').textContent = 
+                    `你选择了: "${selectedOption.chinese}"\n正确答案是: "${correctOption.chinese}"\n\n${correctOption.explanationChinese}`;
+                document.getElementById('explanationEnglish').textContent = 
+                    `You selected: "${selectedOption.english}"\nCorrect answer: "${correctOption.english}"\n\n${correctOption.explanationEnglish}`;
+            }
+            
+            feedback.style.display = 'block';
+        }
+
+        // 下一题
+        function nextDialogue() {
+            const scene = scenes[game.currentScene];
+            
+            if (game.currentDialogue < scene.dialogues.length - 1) {
+                game.currentDialogue++;
+                game.answered = false;
+                loadCurrentDialogue();
+                updateProgress();
+            } else {
+                // 完成当前场景
+                scenes[game.currentScene].completed = true;
+                game.completedScenes = scenes.filter(s => s.completed).length;
+                showSceneCompletion();
+            }
+        }
+
+        // 显示场景完成画面
+        function showSceneCompletion() {
+            const scene = scenes[game.currentScene];
+            const accuracy = Math.round((game.correctAnswers / game.totalAnswers) * 100);
+            
+            document.getElementById('completedSceneName').textContent = scene.title;
+            document.getElementById('completedSceneNameEnglish').textContent = scene.titleEnglish;
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+            document.getElementById('finalStreak').textContent = game.maxStreak;
+            document.getElementById('completionScreen').style.display = 'flex';
+        }
+
+        // 继续学习
+        function continuePlaying() {
+            document.getElementById('completionScreen').style.display = 'none';
+            updateSceneButtons();
+            updateTotalProgress();
+        }
+
+        // 切换场景
+        function changeScene(sceneIndex) {
+            console.log(`尝试切换到场景 ${sceneIndex}`);
+            
+            if (sceneIndex < scenes.length) {
+                game.currentScene = sceneIndex;
+                game.currentDialogue = 0;
+                game.answered = false;
+                initGame();
+            } else {
+                console.error(`场景 ${sceneIndex} 不存在，总场景数: ${scenes.length}`);
+            }
+        }
+
+        // 更新场景按钮状态
+        function updateSceneButtons() {
+            const buttons = document.querySelectorAll('.scene-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('active', 'completed');
+                if (index === game.currentScene) {
+                    btn.classList.add('active');
+                }
+                if (scenes[index].completed) {
+                    btn.classList.add('completed');
+                }
+            });
+            
+            // 更新场景计数
+            const completedCount = scenes.filter(s => s.completed).length;
+            document.getElementById('sceneCount').textContent = 
+                `${completedCount}/${scenes.length}个场景完成 | ${completedCount}/${scenes.length} scenes completed`;
+        }
+
+        // 提示功能
+        function showHint() {
+            if (game.hints <= 0) return;
+            
+            game.hints--;
+            
+            const scene = scenes[game.currentScene];
+            const dialogue = scene.dialogues[game.currentDialogue];
+            const correctOption = dialogue.options.find(o => o.correct);
+            
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach(btn => {
+                const btnText = btn.querySelector('.option-chinese').textContent;
+                if (btnText === correctOption.chinese) {
+                    btn.style.boxShadow = '0 0 0 3px #ffcc00';
+                    btn.style.borderColor = '#ffcc00';
+                    
+                    setTimeout(() => {
+                        btn.style.boxShadow = '';
+                        btn.style.borderColor = '';
+                    }, 2000);
+                }
+            });
+            
+            updateDisplay();
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            const scene = scenes[game.currentScene];
+            
+            // 更新统计数据
+            const accuracy = game.totalAnswers > 0 ? 
+                Math.round((game.correctAnswers / game.totalAnswers) * 100) : 100;
+            
+            document.getElementById('currentSceneStat').textContent = scene.title;
+            document.getElementById('currentSceneEnglish').textContent = scene.titleEnglish;
+            document.getElementById('accuracyRate').textContent = `${accuracy}%`;
+            document.getElementById('streakStat').textContent = game.streak;
+            document.getElementById('learnedStat').textContent = game.totalAnswers * 2;
+            
+            // 更新提示按钮
+            const hintBtn = document.getElementById('hintBtn');
+            hintBtn.querySelector('span').innerHTML = `提示 (${game.hints})<br><small>Hint (${game.hints})</small>`;
+        }
+
+        // 更新场景进度
+        function updateProgress() {
+            const scene = scenes[game.currentScene];
+            const progress = ((game.currentDialogue + 1) / scene.dialogues.length) * 100;
+            
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${game.currentDialogue + 1}/${scene.dialogues.length}`;
+        }
+
+        // 更新总体进度
+        function updateTotalProgress() {
+            const completedCount = scenes.filter(s => s.completed).length;
+            const totalCount = scenes.length;
+            const progress = (completedCount / totalCount) * 100;
+            
+            document.getElementById('totalProgressFill').style.width = `${progress}%`;
+            document.getElementById('totalProgressText').textContent = `${completedCount}/${totalCount}`;
+            
+            // 检查是否所有场景都完成了
+            if (completedCount === totalCount) {
+                setTimeout(() => {
+                    alert("🎊 恭喜！你已经完成了所有场景！\n🎉 Congratulations! You've completed all scenes!");
+                }, 500);
+            }
+        }
+
+        // 初始化事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("游戏初始化...");
+            console.log(`总场景数: ${scenes.length}`);
+            scenes.forEach((scene, index) => {
+                console.log(`场景 ${index}: ${scene.title}, 对话数: ${scene.dialogues.length}`);
+            });
+            
+            initGame();
+            
+            document.getElementById('nextBtn').addEventListener('click', nextDialogue);
+            document.getElementById('hintBtn').addEventListener('click', showHint);
+        });
+    </script>
+</body>
+</html>
